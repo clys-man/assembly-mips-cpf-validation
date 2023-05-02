@@ -1,7 +1,9 @@
 .data
-	toWrite: .asciiz "Hello world"
-	inputFile: .asciiz "test.txt"
-	outputFile: .asciiz "out.txt"
+	toWrite: .asciiz "Hello World was here"
+	inputFile: .asciiz "/home/clysman/Dev/Unifor/ASM/cpf-validation/test.txt"
+	outputFile: .asciiz "/home/clysman/Dev/Unifor/ASM/cpf-validation/out.txt"
+	output: .asciiz "Resultado: \n"
+	carriage: .asciiz "\n"
 	fileWords: .space 1024
 
 .text
@@ -18,36 +20,34 @@
 	la $a2, 1024			# hardcoded buffer length
 	syscall
 	
-	# print whats in the file
-	li $v0, 4				# read_string syscall code = 4
-	la $a0, fileWords
+	la $a0, output
+	li $v0, 4
 	syscall
 	
-	#Close the file
-  	li $v0, 16         		# close_file syscall code
-  	move $a0, $s0      		# file descriptor to close
-  	syscall
-  	
-    
-  	# HOW TO WRITE INTO A FILE
-    
-  	#open file 
-  	li $v0, 13           	# open_file syscall code = 13
-  	la $a0, outputFile     	# get the file name
-  	li $a1, 1           	# file flag = write (1)
-  	syscall
-  	move $s1, $v0        	# save the file descriptor. $s0 = file
-    
-  	#Write the file
-  	li $v0, 15				# write_file syscall code = 15
-  	move $a0, $s1			# file descriptor
-  	la $a1, toWrite			# the string that will be written
-  	la $a2, 21				# length of the toWrite string
-  	syscall
-    
-  	#MUST CLOSE FILE IN ORDER TO UPDATE THE FILE
-  	li $v0, 16         		# close_file syscall code
-  	move $a0, $s1      		# file descriptor to close
-  	syscall
+	move $t0, $zero
+	
+	while:
+		beq $t1, -48, exit
+		
+		# indice
+		lb $t1, fileWords($t0)
+		sub $t1, $t1, 48
+	
+		la $a0, 0($t1)
+		li $v0, 1
+		syscall
+		la $a0, carriage
+		li $v0, 4
+		syscall
+		
+		addi $t0, $t0, 1	
+		
+		j while
+	
+	exit:
+		#Close the file
+  		li $v0, 16         		# close_file syscall code
+  		move $a0, $s0      		# file descriptor to close
+  		syscall
 	
 	
